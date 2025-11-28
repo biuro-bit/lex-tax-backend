@@ -1,0 +1,28 @@
+{
+  "name": "asystent-podatkowy-backend",
+  "version": "1.0.0",
+  "description": "Backend dla Asystenta Podatkowego AI - LEX TAX",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:v2": "node server-v2.js",
+    "dev": "nodemon server.js",
+    "dev:v2": "nodemon server-v2.js",
+    "test": "node test-server.js"
+  },
+  "keywords": ["tax", "accounting", "AI", "Claude", "LEX TAX", "VAT", "PIT", "CIT", "ZUS"],
+  "author": "LEX TAX J.Opala Sp. jawna",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}
