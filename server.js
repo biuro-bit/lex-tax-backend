@@ -256,7 +256,6 @@ async function handleToolUse(response, conversationHistory, resolve, reject, too
 // ENDPOINTY
 // ========================================
 
-// Endpoint zdrowia
 // Root endpoint dla Railway healthcheck
 app.get('/', (req, res) => {
     res.json({ 
@@ -270,7 +269,6 @@ app.get('/', (req, res) => {
 });
 
 // Endpoint zdrowia
-app.get('/api/health', (req, res) => {
 app.get('/api/health', (req, res) => {
     res.json({ 
         status: 'OK', 
@@ -326,6 +324,7 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log('🌐 Dostęp do internetu: AKTYWNY ✅');
     console.log('================================================================');
     console.log('📡 Dostępne endpointy:');
+    console.log('   GET  / - API Info');
     console.log('   GET  /api/health - Test serwera');
     console.log('   POST /api/chat   - Rozmowa z AI (z dostępem do internetu)');
     console.log('================================================================');
@@ -333,3 +332,4 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log('🎯 AI będzie automatycznie szukać w internecie gdy potrzeba!');
     console.log('================================================================\n');
 });
+```
