@@ -257,6 +257,20 @@ async function handleToolUse(response, conversationHistory, resolve, reject, too
 // ========================================
 
 // Endpoint zdrowia
+// Root endpoint dla Railway healthcheck
+app.get('/', (req, res) => {
+    res.json({ 
+        status: 'OK',
+        message: 'LEX TAX Backend API',
+        endpoints: {
+            health: '/api/health',
+            chat: '/api/chat'
+        }
+    });
+});
+
+// Endpoint zdrowia
+app.get('/api/health', (req, res) => {
 app.get('/api/health', (req, res) => {
     res.json({ 
         status: 'OK', 
@@ -302,7 +316,7 @@ app.post('/api/chat', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log('\n🚀 ================================================================');
     console.log('   ASYSTENT PODATKOWY AI + INTERNET - LEX TAX');
     console.log('================================================================');
