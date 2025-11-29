@@ -1,5 +1,5 @@
 // Backend Server dla Asystenta Podatkowego AI z PRAWDZIWYM WEB SEARCH
-// Używa Brave Search API + Claude Tools
+// Uzywa Brave Search API + Claude Tools
 
 const express = require('express');
 const cors = require('cors');
@@ -14,65 +14,12 @@ app.use(express.json());
 // ========================================
 const CLAUDE_API_KEY = process.env.ANTHROPIC_API_KEY || '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';
 const BRAVE_API_KEY = process.env.BRAVE_API_KEY || 'BSARImdZcZ5Zwt8HQd0W0OX2ckLNC--';
-```
 
 // ========================================
 // SYSTEM PROMPT
 // ========================================
 
-const SYSTEM_PROMPT = `Jesteś asystentem AI biura rachunkowego LEX TAX J.Opala Sp. jawna (rachunkowe.com.pl).
-
-TWOJA ROLA: Edukujesz i kierujesz do kontaktu z biurem - NIE zastępujesz księgowego!
-
-WAŻNE ZASADY:
-1. Udzielasz OGÓLNYCH informacji edukacyjnych
-2. ZAWSZE zaznaczasz że to nie jest indywidualna porada
-3. ZAWSZE zachęcasz do kontaktu z biurem dla konkretnych spraw
-4. NIE analizujesz dokumentów, umów, deklaracji
-5. NIE dajesz konkretnych porad "zrób X", tylko "sprawdź z księgowym"
-
-DOSTĘP DO INTERNETU:
-Masz dostęp do narzędzia web_search - UŻYWAJ GO gdy klient pyta o:
-- Aktualne limity (leasingu, amortyzacji, ZUS, VAT)
-- Terminy dla konkretnego roku (PIT, CIT, VAT, JPK)
-- Stawki podatków/składek na dany rok
-- Nowe przepisy "od roku X" lub zmiany
-- KSeF, JPK_V7, aktualne regulacje
-- Konkretne kwoty i daty
-
-ZAWSZE używaj web_search dla aktualnych informacji!
-Szukaj po polsku: "limity leasing 2026", "termin pit 2026", etc.
-
-Po wyszukaniu:
-1. Przeanalizuj wyniki dokładnie
-2. Podaj informacje na podstawie znalezionych źródeł
-3. Cytuj źródła jeśli to ważne
-4. Dodaj disclaimer
-5. Zachęć do kontaktu dla szczegółów
-
-INSTRUKCJA GENEROWANIA TOKENU KSEF:
-1. Wejdź na: https://ksef.mf.gov.pl/web/login
-2. Wpisz NIP firmy i "Uwierzytelnij"
-3. Zaloguj przez Profil Zaufany / e-Dowód / podpis kwalifikowany
-4. Zakładka "Tokeny" → "Generuj token"
-5. Nadaj nazwę (np. "Biuro rachunkowe")
-6. Uprawnienia: wystawianie i odczyt e-faktur, okres: bezterminowo
-7. "Generuj token" → Skopiuj (pokazuje się raz!)
-8. Wyślij token do biura: [email protected]
-
-OGRANICZENIA:
-- "Czy mogę odliczyć [konkretny wydatek]?" → "To wymaga analizy dokumentów"
-- "Sprawdź moją deklarację/umowę" → "Nie analizuję dokumentów"
-- "Co w mojej sytuacji?" → "Każda sytuacja jest inna, potrzebujesz konsultacji"
-
-SZABLON ZAKOŃCZENIA:
-⚠️ Ważne: To ogólne informacje edukacyjne. Każda sytuacja wymaga indywidualnej analizy.
-
-📞 Potrzebujesz konkretnej porady?
-   Tel: 501 408 269
-   Email: [email protected]
-
-💼 Pomożemy Ci zoptymalizować podatki i uniknąć błędów!`;
+const SYSTEM_PROMPT = 'Jestes asystentem AI biura rachunkowego LEX TAX J.Opala Sp. jawna (rachunkowe.com.pl). TWOJA ROLA: Edukujesz i kierujesz do kontaktu z biurem - NIE zastepujesz ksiegowego! WAZNE ZASADY: 1. Udzielasz OGOLNYCH informacji edukacyjnych 2. ZAWSZE zaznaczasz ze to nie jest indywidualna porada 3. ZAWSZE zachecasz do kontaktu z biurem dla konkretnych spraw 4. NIE analizujesz dokumentow, umow, deklaracji 5. NIE dajesz konkretnych porad "zrob X", tylko "sprawdz z ksiegowym" DOSTEP DO INTERNETU: Masz dostep do narzedzia web_search - UZYWAJ GO gdy klient pyta o: - Aktualne limity (leasingu, amortyzacji, ZUS, VAT) - Terminy dla konkretnego roku (PIT, CIT, VAT, JPK) - Stawki podatkow/skladek na dany rok - Nowe przepisy "od roku X" lub zmiany - KSeF, JPK_V7, aktualne regulacje - Konkretne kwoty i daty ZAWSZE uzywaj web_search dla aktualnych informacji! Szukaj po polsku: "limity leasing 2026", "termin pit 2026", etc. Po wyszukaniu: 1. Przeanalizuj wyniki dokladnie 2. Podaj informacje na podstawie znalezionych zrodel 3. Cytuj zrodla jesli to wazne 4. Dodaj disclaimer 5. Zachec do kontaktu dla szczegolow INSTRUKCJA GENEROWANIA TOKENU KSEF: 1. Wejdz na: https://ksef.mf.gov.pl/web/login 2. Wpisz NIP firmy i "Uwierzytelnij" 3. Zaloguj przez Profil Zaufany / e-Dowod / podpis kwalifikowany 4. Zakladka "Tokeny" -> "Generuj token" 5. Nadaj nazwe (np. "Biuro rachunkowe") 6. Uprawnienia: wystawianie i odczyt e-faktur, okres: bezterminowo 7. "Generuj token" -> Skopiuj (pokazuje sie raz!) 8. Wyslij token do biura: [email protected] OGRANICZENIA: - "Czy moge odliczyc [konkretny wydatek]?" -> "To wymaga analizy dokumentow" - "Sprawdz moja deklaracje/umowe" -> "Nie analizuje dokumentow" - "Co w mojej sytuacji?" -> "Kazda sytuacja jest inna, potrzebujesz konsultacji" SZABLON ZAKONCZENIA: Wazne: To ogolne informacje edukacyjne. Kazda sytuacja wymaga indywidualnej analizy. Potrzebujesz konkretnej porady? Tel: 501 408 269, Email: [email protected] - Pomozemy Ci zoptymalizowac podatki i uniknac bledow!';
 
 // ========================================
 // FUNKCJA: Brave Search
@@ -102,12 +49,11 @@ function braveSearch(query) {
                     const data = JSON.parse(body);
                     const results = data.web?.results || [];
                     
-                    // Format wyników dla Claude
                     const formatted = results.slice(0, 5).map((r, i) => 
-                        `[${i+1}] ${r.title}\n${r.description}\nŹródło: ${r.url}`
+                        `[${i+1}] ${r.title}\n${r.description}\nZrodlo: ${r.url}`
                     ).join('\n\n');
                     
-                    resolve(formatted || 'Brak wyników wyszukiwania.');
+                    resolve(formatted || 'Brak wynikow wyszukiwania.');
                 } catch (e) {
                     reject(new Error('Brave JSON Parse Error: ' + e.message));
                 }
@@ -156,7 +102,7 @@ function callClaudeWithTools(userMessage, conversationHistory = []) {
 }
 
 // ========================================
-// FUNKCJA: Wywołanie Claude API
+// FUNKCJA: Wywolanie Claude API
 // ========================================
 
 function makeClaudeRequest(requestData, resolve, reject, conversationHistory) {
@@ -185,13 +131,11 @@ function makeClaudeRequest(requestData, resolve, reject, conversationHistory) {
             try {
                 const response = JSON.parse(body);
                 
-                // Sprawdź czy Claude chce użyć narzędzia
                 if (response.stop_reason === 'tool_use') {
                     handleToolUse(response, conversationHistory, resolve, reject, requestData.tools);
                 } else {
-                    // Normalna odpowiedź tekstowa
                     const textContent = response.content.find(c => c.type === 'text');
-                    resolve(textContent ? textContent.text : 'Przepraszam, wystąpił błąd.');
+                    resolve(textContent ? textContent.text : 'Przepraszam, wystapil blad.');
                 }
             } catch (e) {
                 reject(new Error('Claude JSON Parse Error: ' + e.message));
@@ -205,25 +149,23 @@ function makeClaudeRequest(requestData, resolve, reject, conversationHistory) {
 }
 
 // ========================================
-// FUNKCJA: Obsługa Tool Use
+// FUNKCJA: Obsluga Tool Use
 // ========================================
 
 async function handleToolUse(response, conversationHistory, resolve, reject, tools) {
     const toolUse = response.content.find(c => c.type === 'tool_use');
     
     if (!toolUse || toolUse.name !== 'web_search') {
-        return resolve('Przepraszam, wystąpił problem z wyszukiwaniem.');
+        return resolve('Przepraszam, wystapil problem z wyszukiwaniem.');
     }
 
     const searchQuery = toolUse.input.query;
-    console.log('[🔍 Web Search]', searchQuery);
+    console.log('[Web Search]', searchQuery);
 
     try {
-        // Wywołaj Brave Search
         const searchResults = await braveSearch(searchQuery);
-        console.log('[✅ Search Results]', searchResults.substring(0, 200) + '...');
+        console.log('[Search Results]', searchResults.substring(0, 200) + '...');
 
-        // Kontynuuj rozmowę z wynikami
         const updatedMessages = [
             ...conversationHistory,
             { role: 'assistant', content: response.content },
@@ -248,8 +190,8 @@ async function handleToolUse(response, conversationHistory, resolve, reject, too
         makeClaudeRequest(nextRequest, resolve, reject, updatedMessages);
 
     } catch (error) {
-        console.error('[❌ Search Error]', error.message);
-        resolve('Przepraszam, wystąpił problem z wyszukiwaniem aktualnych informacji. Zadzwoń do nas: 501 408 269');
+        console.error('[Search Error]', error.message);
+        resolve('Przepraszam, wystapil problem z wyszukiwaniem aktualnych informacji. Zadzwon do nas: 501 408 269');
     }
 }
 
@@ -257,7 +199,6 @@ async function handleToolUse(response, conversationHistory, resolve, reject, too
 // ENDPOINTY
 // ========================================
 
-// Root endpoint dla Railway healthcheck
 app.get('/', (req, res) => {
     res.json({ 
         status: 'OK',
@@ -269,48 +210,46 @@ app.get('/', (req, res) => {
     });
 });
 
-// Endpoint zdrowia
 app.get('/api/health', (req, res) => {
     res.json({ 
         status: 'OK', 
-        message: 'Server działa z pełnym dostępem do internetu!',
+        message: 'Server dziala z pelnym dostepem do internetu!',
         features: {
-            claude_ai: CLAUDE_API_KEY ? '✅ Enabled' : '❌ Missing API Key',
-            brave_search: BRAVE_API_KEY ? '✅ Enabled' : '❌ Missing API Key',
-            web_access: '✅ Active'
+            claude_ai: CLAUDE_API_KEY ? 'Enabled' : 'Missing API Key',
+            brave_search: BRAVE_API_KEY ? 'Enabled' : 'Missing API Key',
+            web_access: 'Active'
         },
         timestamp: new Date().toISOString()
     });
 });
 
-// Endpoint czatu
 app.post('/api/chat', async (req, res) => {
     try {
         const { message } = req.body;
         
         if (!message) {
-            return res.status(400).json({ error: 'Brak wiadomości' });
+            return res.status(400).json({ error: 'Brak wiadomosci' });
         }
 
         if (!CLAUDE_API_KEY) {
             return res.status(500).json({ 
                 error: 'Brak klucza API',
-                message: 'Skontaktuj się z administratorem'
+                message: 'Skontaktuj sie z administratorem'
             });
         }
 
-        console.log('\n[💬 Chat] Otrzymano:', message);
+        console.log('[Chat] Otrzymano:', message);
         
         const response = await callClaudeWithTools(message);
         
-        console.log('[✅ Response] Wysłano odpowiedź\n');
+        console.log('[Response] Wyslano odpowiedz');
         
         res.json({ response });
         
     } catch (error) {
-        console.error('[❌ Error]', error.message);
+        console.error('[Error]', error.message);
         res.status(500).json({ 
-            error: 'Błąd serwera', 
+            error: 'Blad serwera', 
             details: error.message 
         });
     }
@@ -323,17 +262,13 @@ app.post('/api/chat', async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, '0.0.0.0', () => {
-    console.log('\n🚀 ================================================================');
-    console.log('   ASYSTENT PODATKOWY AI + INTERNET - LEX TAX');
-    console.log('================================================================');
-    console.log(`✅ Server działa na http://localhost:${PORT}`);
-    console.log('🔑 Claude API:', CLAUDE_API_KEY ? 'Skonfigurowany ✅' : 'BRAK KLUCZA ❌');
-    console.log('🔍 Brave Search:', BRAVE_API_KEY ? 'Skonfigurowany ✅' : 'BRAK KLUCZA ❌');
-    console.log('🌐 Dostęp do internetu: AKTYWNY ✅');
-    console.log('================================================================');
-    console.log('📡 Dostępne endpointy:');
-    console.log('   GET  / - API Info');
-    console.log('   GET  /api/health - Test serwera');
-    console.log('   POST /api/chat   - Rozmowa z AI (z dostępem do internetu)');
-    console.log('================================================================\n');
+    console.log('\nASYSTENT PODATKOWY AI + INTERNET - LEX TAX');
+    console.log('Server dziala na http://localhost:' + PORT);
+    console.log('Claude API:', CLAUDE_API_KEY ? 'Skonfigurowany' : 'BRAK KLUCZA');
+    console.log('Brave Search:', BRAVE_API_KEY ? 'Skonfigurowany' : 'BRAK KLUCZA');
+    console.log('Dostep do internetu: AKTYWNY');
+    console.log('Dostepne endpointy:');
+    console.log('  GET  / - API Info');
+    console.log('  GET  /api/health - Test serwera');
+    console.log('  POST /api/chat - Rozmowa z AI\n');
 });
