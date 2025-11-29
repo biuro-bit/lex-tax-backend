@@ -12,8 +12,9 @@ app.use(express.json());
 // ========================================
 // KLUCZE API
 // ========================================
-const CLAUDE_API_KEY = process.env.ANTHROPIC_API_KEY || '';
-const BRAVE_API_KEY = process.env.BRAVE_API_KEY || '';
+const CLAUDE_API_KEY = process.env.ANTHROPIC_API_KEY || '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';
+const BRAVE_API_KEY = process.env.BRAVE_API_KEY || 'BSARImdZcZ5Zwt8HQd0W0OX2ckLNC--';
+```
 
 // ========================================
 // SYSTEM PROMPT
