@@ -199,10 +199,12 @@ async function handleToolUse(response, conversationHistory, resolve, reject, too
 // ENDPOINTY
 // ========================================
 
+// Root endpoint - Railway health check
 app.get('/', (req, res) => {
-    res.json({ 
+    res.json({
         status: 'OK',
-        message: 'LEX TAX Backend API',
+        service: 'LEX TAX Backend API',
+        version: '1.0',
         endpoints: {
             health: '/api/health',
             chat: '/api/chat'
@@ -261,7 +263,7 @@ app.post('/api/chat', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
     console.log('\nASYSTENT PODATKOWY AI + INTERNET - LEX TAX');
     console.log('Server dziala na http://localhost:' + PORT);
     console.log('Claude API:', CLAUDE_API_KEY ? 'Skonfigurowany' : 'BRAK KLUCZA');
