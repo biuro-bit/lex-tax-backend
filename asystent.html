@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asystent Podatkowy AI - LEX TAX</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      top: 50%;
+      width: 200px;
+      height: 200px;
+      background: url('logo.png') center/contain no-repeat;
+      opacity: 0.08;
+      z-index: 0;
+      pointer-events: none;
+      transform: translateY(-50%);
+    }
+    body::before { left: 5%; }
+    body::after { right: 5%; }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      height: 90vh;
+      max-height: 900px;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+      border-bottom: 3px solid #718096;
+    }
+
+    .header h1 { font-size: 28px; margin-bottom: 8px; font-weight: 600; }
+    .subtitle { font-size: 14px; opacity: 0.9; margin-bottom: 10px; }
+    .status {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .status.ok { background: #48bb78; color: #fff; }
+    .status.error { background: #f56565; color: #fff; }
+    .status.checking { background: #ed8936; color: #fff; }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 30px;
+      background: #f7fafc;
+    }
+
+    .message { margin-bottom: 20px; display: flex; animation: fadeIn 0.3s; }
+    .message.user { justify-content: flex-end; }
+    .message.bot { justify-content: flex-start; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .message-content {
+      max-width: 75%;
+      padding: 15px 20px;
+      border-radius: 18px;
+      line-height: 1.6;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      font-size: 15px;
+    }
+
+    .message.user .message-content {
+      background: #4a5568;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.bot .message-content {
+      background: white;
+      color: #2d3748;
+      border: 1px solid #e2e8f0;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .input-area {
+      padding: 20px 30px;
+      background: white;
+      border-top: 2px solid #e2e8f0;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 15px 20px;
+      border: 2px solid #cbd5e0;
+      border-radius: 25px;
+      font-size: 16px;
+      outline: none;
+      background: #f7fafc;
+    }
+
+    .input-area input:focus {
+      border-color: #718096;
+      background: white;
+    }
+
+    .input-area button {
+      background: #4a5568;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .input-area button:hover:not(:disabled) { background: #2d3748; }
+    .input-area button:disabled { background: #cbd5e0; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🧮 Asystent Podatkowy AI</h1>
+      <div class="subtitle">LEX TAX J.Opala Sp. jawna</div>
+      <div class="status checking" id="status">Łączenie...</div>
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="welcome" id="welcome">
+        <h2>Witaj w Asystencie Podatkowym AI!</h2>
+        <img src="logo.png" alt="LEX TAX" class="welcome-logo" />
+        <p>Zadaj dowolne pytanie o polskie prawo podatkowe, księgowość, ZUS, terminy płatności czy optymalizację podatkową.</p>
+        <div class="info-box">
+          <strong>💡 Przykładowe pytania:</strong><br><br>
+          • Jakie są aktualne terminy VAT?<br>
+          • Kiedy płaci się ZUS za listopad?<br>
+          • Jakie zmiany w leasingu od 2026?<br>
+          • Co to jest IP BOX?<br>
+          • Jak działa estoński CIT?
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <input type="text" id="input" placeholder="Zadaj pytanie o podatki..." disabled />
+      <button id="sendBtn" disabled>Myśli</button>
+    </div>
+  </div>
+
+  <script>
+    // Adres backendu na Renderze 👇
+    var BACKEND = 'https://lex-tax-backend.onrender.com';
+    var connected = false;
+    var messagesDiv = document.getElementById('messages');
+
+    function addMessage(text, type) {
+      var welcomeDiv = document.getElementById('welcome');
+      if (welcomeDiv) welcomeDiv.style.display = 'none';
+
+      var messageDiv = document.createElement('div');
+      messageDiv.className = 'message ' + type;
+
+      var contentDiv = document.createElement('div');
+      contentDiv.className = 'message-content';
+      contentDiv.textContent = text;
+
+      messageDiv.appendChild(contentDiv);
+      messagesDiv.appendChild(messageDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function checkBackend() {
+      fetch(BACKEND + '/api/health')
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === 'OK') {
+            connected = true;
+            document.getElementById('status').textContent = '✅ Połączono z AI';
+            document.getElementById('status').className = 'status ok';
+            document.getElementById('input').disabled = false;
+            document.getElementById('sendBtn').disabled = false;
+          }
+        })
+        .catch(() => {
+          connected = false;
+          document.getElementById('status').textContent = '❌ Brak połączenia';
+          document.getElementById('status').className = 'status error';
+          setTimeout(checkBackend, 4000);
+        });
+    }
+
+    function sendQuestion() {
+      var input = document.getElementById('input');
+      var msg = input.value.trim();
+      if (!msg || !connected) return;
+
+      addMessage(msg, 'user');
+      input.value = '';
+      var btn = document.getElementById('sendBtn');
+      btn.disabled = true;
+      btn.textContent = 'Myśli...';
+
+      fetch(BACKEND + '/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg })
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.response)
+            addMessage(data.response, 'bot');
+          else if (data.error)
+            addMessage('❌ Błąd: ' + data.error, 'bot');
+          else 
+            addMessage('❌ Brak odpowiedzi', 'bot');
+        })
+        .catch(err => addMessage('❌ Błąd połączenia: ' + err.message, 'bot'))
+        .finally(() => {
+          btn.disabled = false;
+          btn.textContent = 'Myśli';
+          input.focus();
+        });
+    }
+
+    document.getElementById('input').addEventListener('keypress', e => {
+      if (e.key === 'Enter' && connected) sendQuestion();
+    });
+
+    document.getElementById('sendBtn').addEventListener('click', sendQuestion);
+    checkBackend();
+  </script>
+</body>
+</html>
