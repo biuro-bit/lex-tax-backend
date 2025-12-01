@@ -20,10 +20,10 @@ app.use(cors({
 app.use(express.json());
 
 // ========================================
-// KLUCZE API
+// KLUCZE API - TYLKO ZE ZMIENNYCH SRODOWISKOWYCH
 // ========================================
-const CLAUDE_API_KEY = process.env.ANTHROPIC_API_KEY || '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';
-const BRAVE_API_KEY = process.env.BRAVE_API_KEY || 'BSARImdZcZ5Zwt8HQd0W0OX2ckLNC--';
+const CLAUDE_API_KEY = process.env.ANTHROPIC_API_KEY;
+const BRAVE_API_KEY = process.env.BRAVE_API_KEY;
 
 // ========================================
 // SYSTEM PROMPT - ZAKTUALIZOWANY
