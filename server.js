@@ -96,10 +96,9 @@ OGRANICZENIA:
 - "Co w mojej sytuacji?" -> "Kazda sytuacja jest inna, potrzebujesz konsultacji"
 
 SZABLON ZAKONCZENIA:
+SZABLON ZAKONCZENIA:
 Wazne: To ogolne informacje edukacyjne na podstawie [data zrodla]. Kazda sytuacja wymaga indywidualnej analizy. 
-Potrzebujesz konkretnej porady? Tel: 501 408 269, Email: [email protected] - Pomozemy Ci zoptymalizowac podatki i uniknac bledow!`;
-
-// ========================================
+Potrzebujesz konkretnej porady? Tel: 501 408 269, Email: biuro@rachunkowe.com.pl - Pomozemy Ci zoptymalizowac podatki i uniknac bledow!`;// ========================================
 // FUNKCJA: Brave Search
 // ========================================
 
