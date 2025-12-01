@@ -6,7 +6,17 @@ const cors = require('cors');
 const https = require('https');
 
 const app = express();
-app.use(cors());
+
+// ========================================
+// CORS - POPRAWIONY dla Netlify
+// ========================================
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type'],
+    credentials: true
+}));
+
 app.use(express.json());
 
 // ========================================
@@ -199,7 +209,7 @@ async function handleToolUse(response, conversationHistory, resolve, reject, too
 // ENDPOINTY
 // ========================================
 
-// Root endpoint - Railway health check
+// Root endpoint - Railway/Render health check
 app.get('/', (req, res) => {
     res.json({
         status: 'OK',
@@ -269,6 +279,7 @@ app.listen(PORT, () => {
     console.log('Claude API:', CLAUDE_API_KEY ? 'Skonfigurowany' : 'BRAK KLUCZA');
     console.log('Brave Search:', BRAVE_API_KEY ? 'Skonfigurowany' : 'BRAK KLUCZA');
     console.log('Dostep do internetu: AKTYWNY');
+    console.log('CORS: Wszystkie domeny');
     console.log('Dostepne endpointy:');
     console.log('  GET  / - API Info');
     console.log('  GET  /api/health - Test serwera');
