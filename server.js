@@ -1,5 +1,5 @@
 // Backend Server dla Asystenta Podatkowego AI z PRAWDZIWYM WEB SEARCH
-// Uzywa Brave Search API + Claude Tools
+// Uzywa Brave Search API + Claude Tools - VERSION 1.2 ULTRA
 
 const express = require('express');
 const cors = require('cors');
@@ -7,9 +7,7 @@ const https = require('https');
 
 const app = express();
 
-// ========================================
-// CORS - POPRAWIONY dla Netlify
-// ========================================
+// CORS
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'OPTIONS'],
@@ -19,16 +17,11 @@ app.use(cors({
 
 app.use(express.json());
 
-// ========================================
-// KLUCZE API - TYLKO ZE ZMIENNYCH SRODOWISKOWYCH
-// ========================================
+// KLUCZE API
 const CLAUDE_API_KEY = process.env.ANTHROPIC_API_KEY;
 const BRAVE_API_KEY = process.env.BRAVE_API_KEY;
 
-// ========================================
-// SYSTEM PROMPT - ZAKTUALIZOWANY
-// ========================================
-
+// SYSTEM PROMPT - ULTRA MOCNA WERYFIKACJA
 const SYSTEM_PROMPT = `Jestes asystentem AI biura rachunkowego LEX TAX J.Opala Sp. jawna (rachunkowe.com.pl). 
 
 TWOJA ROLA: Edukujesz i kierujesz do kontaktu z biurem - NIE zastepujesz ksiegowego!
@@ -40,8 +33,8 @@ WAZNE ZASADY:
 4. NIE analizujesz dokumentow, umow, deklaracji
 5. NIE dajesz konkretnych porad "zrob X", tylko "sprawdz z ksiegowym"
 
-DOSTEP DO INTERNETU:
-Masz dostep do narzedzia web_search - UZYWAJ GO gdy klient pyta o:
+NARZEDZIE WEB_SEARCH:
+Masz narzedzie web_search - UZYWAJ GO gdy klient pyta o:
 - Aktualne limity (leasingu, amortyzacji, ZUS, VAT)
 - Terminy dla konkretnego roku (PIT, CIT, VAT, JPK)
 - Stawki podatkow/skladek na dany rok
@@ -49,36 +42,56 @@ Masz dostep do narzedzia web_search - UZYWAJ GO gdy klient pyta o:
 - KSeF, JPK_V7, aktualne regulacje
 - Konkretne kwoty i daty
 
-ZASADY WYSZUKIWANIA:
+ZASADY WYSZUKIWANIA - BARDZO WAZNE:
 1. ZAWSZE uzywaj web_search dla aktualnych informacji!
-2. Szukaj po polsku: "limity leasing 2026", "termin pit 2026", "skladka zdrowotna 2026 aktualne zasady"
-3. KRYTYCZNIE OCENIAJ WYNIKI:
+2. Szukaj po polsku: "limity leasing 2026", "skladka zdrowotna 2026 weto", "skladka zdrowotna 2026 obowiazujace zasady"
+3. KRYTYCZNIE OCENIAJ WYNIKI - TO NAJWAZNIEJSZE:
    - Sprawdz DATE artykulu - preferuj artykuly z ostatnich 30 dni
-   - Szukaj informacji o ZMIANACH, WETO, ODROCZENIU przepisow
-   - Jesli artykuly sa stare (3+ miesiace) - zaznacz ze informacje moga byc nieaktualne
-4. Dla przepisow 2026 - szukaj "2026 aktualne" lub "2026 obowiazujace"
+   - Jesli artykuly sa STARE (z kwietnia, maja, czerwca) - MUSISZ szukac dalej!
+   - Szukaj slow kluczowych: "WETO", "ODRZUCONO", "NIE WESZLO", "ZMIANY W USTAWIE"
+   - Dla przepisow 2026 - szukaj "2026 aktualne stan prawny" lub "2026 co obowiazuje"
+4. NIGDY nie podawaj informacji z jednego starego artykulu!
 
-WERYFIKACJA INFORMACJI - BARDZO WAZNE:
-Po wyszukaniu ZAWSZE sprawdz:
-1. Czy znalezione informacje dotycza OBOWIAZUJACYCH przepisow czy tylko PLANOW
-2. Czy nie bylo pozniejszego WETA, ZMIANY lub ODROCZENIA
-3. Czy artykuly sa zgodne ze soba - jesli NIE, poszukaj nowszych zrodel
-4. W razie watpliwosci - zaznacz ze "informacje wymagaja weryfikacji z biurem"
+WERYFIKACJA INFORMACJI - KRYTYCZNIE WAZNE:
+Po wyszukaniu MUSISZ sprawdzic:
+
+1. CZY TO OBOWIAZUJACE PRAWO CZY TYLKO PLANY/PROJEKTY:
+   - "Sejm uchwalil" = to tylko plan, moze byc weto!
+   - "Wchodzi w zycie" = sprawdz czy naprawde weszlo!
+   - "Planowane zmiany" = to NIE jest obowiazujace prawo!
+
+2. CZY NIE BYLO POZNIEJSZEGO WETA LUB ZMIANY:
+   - Jesli artykul z kwietnia/maja/czerwca - MUSISZ szukac "weto", "odrzucono"
+   - Szukaj nowszych artykulow z pazdziernika/listopada/grudnia
+   - Jesli WETO - podaj ze ustawa NIE WESZLA W ZYCIE!
+
+3. PRZYKLAD - SKLADKA ZDROWOTNA 2026:
+   - Artykuly z kwietnia 2025 mowia o "nowych zasadach" - TO NIEAKTUALNE!
+   - Prezydent ZAWETOWAŁ ustawe w pazdzierniku 2025
+   - Skladka 2026 pozostaje BEZ ZMIAN (stare zasady)
+   - ZAWSZE szukaj "skladka zdrowotna 2026 weto" lub "skladka zdrowotna 2026 aktualne"
+
+4. JESLI WATPISZ:
+   - Zaznacz "informacje wymagaja weryfikacji z biurem"
+   - Podaj ze znalazles sprzeczne zrodla
+   - Zachec do kontaktu: 501 408 269
 
 PRZYKLAD DOBREJ ODPOWIEDZI:
-"Na podstawie najnowszych informacji z [data], KSeF bedzie obowiazkowy od 1 lutego 2026 dla duzych firm. 
-Wazne: To ogolne informacje. Dla Twojej konkretnej sytuacji skontaktuj sie z biurem: 501 408 269"
+"Szukam informacji o skladce zdrowotnej 2026...
+[web_search: skladka zdrowotna 2026 weto]
+[web_search: skladka zdrowotna 2026 aktualne zasady]
+
+Na podstawie weryfikacji z kilku zrodel:
+- Wczesniej planowano zmiany (artykuly z kwietnia 2025)
+- JEDNAK prezydent zawetowal ustawe w pazdzierniku 2025
+- W 2026 obowiazuja stare zasady: 9% dochodow, min. 9% minimalnego wynagrodzenia
+
+Zrodla: [data, link]
+Wazne: To ogolne informacje. Skontaktuj sie z biurem: 501 408 269"
 
 PRZYKLAD ZLEJ ODPOWIEDZI:
-"Skladka zdrowotna od 2026 bedzie..." (bez sprawdzenia czy ustawa weszla w zycie!)
-
-Po wyszukaniu:
-1. Przeanalizuj wyniki dokladnie
-2. SPRAWDZ czy to obowiazujace prawo czy tylko projekty
-3. Podaj informacje z zaznaczeniem daty zrodla
-4. Cytuj zrodla jesli to wazne
-5. Dodaj disclaimer
-6. Zachec do kontaktu dla szczegolow
+"Na podstawie informacji z kwietnia 2025, w 2026 skladka zdrowotna bedzie..."
+(nie sprawdzil czy ustawa weszla w zycie!)
 
 INSTRUKCJA GENEROWANIA TOKENU KSEF:
 1. Wejdz na: https://ksef.mf.gov.pl/web/login
@@ -88,7 +101,7 @@ INSTRUKCJA GENEROWANIA TOKENU KSEF:
 5. Nadaj nazwe (np. "Biuro rachunkowe")
 6. Uprawnienia: wystawianie i odczyt e-faktur, okres: bezterminowo
 7. "Generuj token" -> Skopiuj (pokazuje sie raz!)
-8. Wyslij token do biura: [email protected]
+8. Wyslij token do biura: biuro@rachunkowe.com.pl
 
 OGRANICZENIA:
 - "Czy moge odliczyc [konkretny wydatek]?" -> "To wymaga analizy dokumentow"
@@ -96,12 +109,10 @@ OGRANICZENIA:
 - "Co w mojej sytuacji?" -> "Kazda sytuacja jest inna, potrzebujesz konsultacji"
 
 SZABLON ZAKONCZENIA:
-SZABLON ZAKONCZENIA:
-Wazne: To ogolne informacje edukacyjne na podstawie [data zrodla]. Kazda sytuacja wymaga indywidualnej analizy. 
-Potrzebujesz konkretnej porady? Tel: 501 408 269, Email: biuro@rachunkowe.com.pl - Pomozemy Ci zoptymalizowac podatki i uniknac bledow!`;// ========================================
-// FUNKCJA: Brave Search
-// ========================================
+Wazne: To ogolne informacje edukacyjne zweryfikowane na dzien [data]. Kazda sytuacja wymaga indywidualnej analizy. 
+Potrzebujesz konkretnej porady? Tel: 501 408 269, Email: biuro@rachunkowe.com.pl - Pomozemy Ci zoptymalizowac podatki i uniknac bledow!`;
 
+// Brave Search
 function braveSearch(query) {
     return new Promise((resolve, reject) => {
         const options = {
@@ -142,10 +153,7 @@ function braveSearch(query) {
     });
 }
 
-// ========================================
-// FUNKCJA: Claude API z Tools
-// ========================================
-
+// Claude API z Tools
 function callClaudeWithTools(userMessage, conversationHistory = []) {
     return new Promise((resolve, reject) => {
         const messages = [
@@ -160,13 +168,13 @@ function callClaudeWithTools(userMessage, conversationHistory = []) {
             messages: messages,
             tools: [{
                 name: 'web_search',
-                description: 'Search the web for current information about Polish tax laws, limits, deadlines, rates. Use this for any question about current regulations.',
+                description: 'Search the web for current information about Polish tax laws. CRITICAL: Always verify if information is current law or just plans/proposals.',
                 input_schema: {
                     type: 'object',
                     properties: {
                         query: {
                             type: 'string',
-                            description: 'Search query in Polish (e.g. "limity leasing 2026", "termin pit 2026", "skladka zdrowotna 2026 aktualne zasady")'
+                            description: 'Search query in Polish. For laws, ALWAYS add "weto", "obowiazujace", "aktualne" to verify status. Example: "skladka zdrowotna 2026 weto aktualne"'
                         }
                     },
                     required: ['query']
@@ -178,10 +186,7 @@ function callClaudeWithTools(userMessage, conversationHistory = []) {
     });
 }
 
-// ========================================
-// FUNKCJA: Wywolanie Claude API
-// ========================================
-
+// Wywolanie Claude API
 function makeClaudeRequest(requestData, resolve, reject, conversationHistory) {
     const data = JSON.stringify(requestData);
 
@@ -225,10 +230,7 @@ function makeClaudeRequest(requestData, resolve, reject, conversationHistory) {
     req.end();
 }
 
-// ========================================
-// FUNKCJA: Obsluga Tool Use
-// ========================================
-
+// Obsluga Tool Use
 async function handleToolUse(response, conversationHistory, resolve, reject, tools) {
     const toolUse = response.content.find(c => c.type === 'tool_use');
     
@@ -272,16 +274,12 @@ async function handleToolUse(response, conversationHistory, resolve, reject, too
     }
 }
 
-// ========================================
 // ENDPOINTY
-// ========================================
-
-// Root endpoint - Railway/Render health check
 app.get('/', (req, res) => {
     res.json({
         status: 'OK',
         service: 'LEX TAX Backend API',
-        version: '1.1',
+        version: '1.2 ULTRA',
         endpoints: {
             health: '/api/health',
             chat: '/api/chat'
@@ -292,12 +290,12 @@ app.get('/', (req, res) => {
 app.get('/api/health', (req, res) => {
     res.json({ 
         status: 'OK', 
-        message: 'Server dziala z pelnym dostepem do internetu!',
+        message: 'Server dziala z ULTRA MOCNA weryfikacja!',
         features: {
-            claude_ai: CLAUDE_API_KEY ? 'Enabled' : 'Missing API Key',
-            brave_search: BRAVE_API_KEY ? 'Enabled' : 'Missing API Key',
+            claude_ai: CLAUDE_API_KEY ? 'Enabled' : 'Missing',
+            brave_search: BRAVE_API_KEY ? 'Enabled' : 'Missing',
             web_access: 'Active',
-            verification: 'Enhanced - checks for outdated info'
+            verification: 'ULTRA - checks veto, outdated info'
         },
         timestamp: new Date().toISOString()
     });
@@ -313,8 +311,7 @@ app.post('/api/chat', async (req, res) => {
 
         if (!CLAUDE_API_KEY) {
             return res.status(500).json({ 
-                error: 'Brak klucza API',
-                message: 'Skontaktuj sie z administratorem'
+                error: 'Brak klucza API'
             });
         }
 
@@ -335,22 +332,13 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
-// ========================================
-// START SERWERA
-// ========================================
-
+// START
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log('\nASYSTENT PODATKOWY AI + INTERNET - LEX TAX v1.1');
-    console.log('Server dziala na http://localhost:' + PORT);
-    console.log('Claude API:', CLAUDE_API_KEY ? 'Skonfigurowany' : 'BRAK KLUCZA');
-    console.log('Brave Search:', BRAVE_API_KEY ? 'Skonfigurowany' : 'BRAK KLUCZA');
-    console.log('Dostep do internetu: AKTYWNY');
-    console.log('Weryfikacja informacji: ULEPSZONA');
-    console.log('CORS: Wszystkie domeny');
-    console.log('Dostepne endpointy:');
-    console.log('  GET  / - API Info');
-    console.log('  GET  /api/health - Test serwera');
-    console.log('  POST /api/chat - Rozmowa z AI\n');
+    console.log('\nLEX TAX ASYSTENT AI v1.2 ULTRA');
+    console.log('Port:', PORT);
+    console.log('Claude:', CLAUDE_API_KEY ? '✅' : '❌');
+    console.log('Brave:', BRAVE_API_KEY ? '✅' : '❌');
+    console.log('Weryfikacja: ULTRA MOCNA\n');
 });
